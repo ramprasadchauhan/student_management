@@ -39,33 +39,37 @@ const Header = () => {
         >
           <FaMoon />
         </Button>
-        <Link to="/sign-in">
-          {currentUser ? (
-            <Dropdown
-              arrowIcon={false}
-              inline
-              label={
-                <Avatar alt="user" img={currentUser.profilePicture} rounded />
-              }
-            >
-              <Dropdown.Header className="block text-sm">
-                @{currentUser.username}{" "}
-              </Dropdown.Header>
-              <Dropdown.Header className="block text-sm font-medium truncate">
-                {currentUser.email}
-              </Dropdown.Header>
-              <Dropdown.Header>
-                <Link to="/dashboard/tab=profile">
-                  <Dropdown.Item>Dashboard</Dropdown.Item>
-                </Link>
-                <Dropdown.Divider />
-                <Dropdown.Item>Sign Out</Dropdown.Item>
-              </Dropdown.Header>
-            </Dropdown>
-          ) : (
-            ""
-          )}
-        </Link>
+
+        {currentUser ? (
+          <Dropdown
+            arrowIcon={false}
+            inline
+            label={
+              <Avatar alt="user" img={currentUser.profilePicture} rounded />
+            }
+          >
+            <Dropdown.Header className="block text-sm">
+              @{currentUser.username}
+            </Dropdown.Header>
+            <Dropdown.Header className="block text-sm font-medium truncate">
+              {currentUser.email}
+            </Dropdown.Header>
+            <Dropdown.Header>
+              <Link to="/dashboard/tab=profile">
+                <Dropdown.Item>Dashboard</Dropdown.Item>
+              </Link>
+              <Dropdown.Divider />
+              <Dropdown.Item>Sign Out</Dropdown.Item>
+            </Dropdown.Header>
+          </Dropdown>
+        ) : (
+          <Link to="/sign-in">
+            <Button gradientDuoTone="purpleToBlue" outline>
+              Sign In
+            </Button>
+          </Link>
+        )}
+
         <Navbar.Toggle />
       </div>
       <Navbar.Collapse>
