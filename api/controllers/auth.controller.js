@@ -15,8 +15,8 @@ export const signup = async (req, res, next) => {
   ) {
     next(errorHandler(400, "All fields are required"));
   }
-  const salt = bcrypt.genSaltSync(10);
-  const hashedPassword = bcrypt.hashSync(password, salt);
+  const salt = bcryptjs.genSaltSync(10);
+  const hashedPassword = bcryptjs.hashSync(password, salt);
 
   const newUser = new User({
     username,
@@ -85,7 +85,7 @@ export const google = async (req, res, next) => {
       const genratedPassword =
         Math.random().toString(36).slice(-8) +
         Math.random().toString(36).slice(-8);
-      const hashedPassword = bcrypt.hashSync(genratedPassword, 10);
+      const hashedPassword = bcryptjs.hashSync(genratedPassword, 10);
       const newUser = new User({
         username:
           name.toLowerCase().split(" ").join("") +
