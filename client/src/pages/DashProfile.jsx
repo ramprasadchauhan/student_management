@@ -20,7 +20,7 @@ import {
   updateStart,
   updateSuccess,
 } from "../redux/user/userSlice";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 const DashProfile = () => {
   const [imageFile, setImageFile] = useState(null);
   const [imageFileUrl, setImageFileUrl] = useState(null);
@@ -233,17 +233,6 @@ const DashProfile = () => {
         >
           {loading ? "Loading..." : "Update"}
         </Button>
-        {currentUser.isAdmin && (
-          <Link to="/create-post">
-            <Button
-              type="button"
-              gradientDuoTone="purpleToPink"
-              className="w-full"
-            >
-              Create a post
-            </Button>
-          </Link>
-        )}
       </form>
       <div className="text-red-500 flex justify-between mt-5">
         <span onClick={() => setShowModal(true)} className="cursor-pointer">

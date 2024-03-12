@@ -1,7 +1,7 @@
 import { Sidebar } from "flowbite-react";
 import { useEffect, useState } from "react";
-import { HiArrowRight, HiUser } from "react-icons/hi";
-import { useDispatch } from "react-redux";
+import { HiArrowRight, HiOutlineUserGroup, HiUser } from "react-icons/hi";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { signoutSuccess } from "../redux/user/userSlice";
 
@@ -10,6 +10,7 @@ const DashSidebar = () => {
   const [tab, setTab] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { currentUser } = useSelector((state) => state.user);
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const tabFromUrl = urlParams.get("tab");
@@ -50,6 +51,18 @@ const DashSidebar = () => {
               Profile
             </Sidebar.Item>
           </Link>
+          {currentUser && currentUser.isAdmin && (
+            <Link to="/dashboard?tab=users">
+              <Sidebar.Item
+                as="div"
+                active={tab === "users"}
+                icon={HiOutlineUserGroup}
+                labelColor="dark"
+              >
+                Users
+              </Sidebar.Item>
+            </Link>
+          )}
           <Sidebar.Item
             onClick={handleSignOut}
             icon={HiArrowRight}
