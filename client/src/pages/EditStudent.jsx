@@ -147,11 +147,11 @@ const EditStudent = () => {
           </Button>
         </div>
         {imageUploadError && <Alert color="failure">{imageUploadError}</Alert>}
-        {formData.image && (
+        {formData.profilePhoto && (
           <img
             src={formData.profilePhoto}
             alt="upload"
-            className="w-full h-10 object-cover"
+            className="w-10 h-10 rounded-full object-cover"
           />
         )}
         <div className="flex gap-2 justify-between items-center">
