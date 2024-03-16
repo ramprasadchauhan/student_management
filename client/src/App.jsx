@@ -10,7 +10,7 @@ import PrivateRoute from "./components/PrivateRoute";
 
 import CreateStudent from "./pages/CreateStudent";
 import EditStudent from "./pages/EditStudent";
-import DeleteStudent from "./pages/DeleteStudent";
+
 import ShowStudent from "./pages/ShowStudent";
 
 const App = () => {
@@ -18,15 +18,18 @@ const App = () => {
     <BrowserRouter>
       <Header />
       <Routes>
-        <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route element={<PrivateRoute />}>
+          <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/student/create" element={<CreateStudent />} />
-          <Route path="/student/edit/:id" element={<EditStudent />} />
-          <Route path="/student/delete/:id" element={<DeleteStudent />} />
+          <Route path="/create-student" element={<CreateStudent />} />
+          <Route path="/update-student/:studentId" element={<EditStudent />} />
+          {/* <Route
+            path="/delete-student/:studentId"
+            element={<DeleteStudent />}
+          /> */}
         </Route>
-        <Route path="/student/details/:id" element={<ShowStudent />} />
+        <Route path="/show-student/:studentId" element={<ShowStudent />} />
 
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />

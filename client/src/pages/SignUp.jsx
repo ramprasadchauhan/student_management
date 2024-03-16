@@ -8,12 +8,14 @@ const SignUp = () => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value.trim() });
   };
   // console.log(formData);
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!formData.username || !formData.email || !formData.password) {
       return setErrorMessage("Please fill out all fields");
     }

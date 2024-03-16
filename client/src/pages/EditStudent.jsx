@@ -1,45 +1,93 @@
-import { Button, Label, TextInput } from "flowbite-react";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytesResumable,
+} from "firebase/storage";
+import { Alert, Button, FileInput, Label, TextInput } from "flowbite-react";
 import { useEffect, useState } from "react";
+import { CircularProgressbar } from "react-circular-progressbar";
 import { useNavigate, useParams } from "react-router-dom";
+import { app } from "../firebase";
 
 const EditStudent = () => {
+  const [file, setFile] = useState(null);
+  const [imageUploadProgress, setImageUploadProgress] = useState(null);
+  const [imageUploadError, setImageUploadError] = useState(null);
   const [formData, setFormData] = useState({});
+  const [publishError, setPublishError] = useState(null);
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { studentId } = useParams();
 
   useEffect(() => {
-    const fetchStudentDetails = async () => {
-      try {
-        const response = await fetch(`/api/student/${id}`);
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch student details. Status: ${response.status}`
-          );
+    try {
+      const fetchStudent = async () => {
+        const res = await fetch(`/api/student/getonestudent/${studentId}`, {
+          method: "GET",
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          console.log(data.message);
+          setPublishError(data.message);
+          return;
         }
-        const data = await response.json();
-        console.log(data);
-        setFormData({
-          name: data.name || "",
-          gender: data.gender || "",
-          parentName: data.parentName || "",
-          acadmicYear: data.acadmicYear || "",
-          schoolName: data.schoolName || "",
-        }); // Set the initial state with fetched data
-      } catch (error) {
-        console.log("Error fetching student details", error.message);
-      }
-    };
+        if (res.ok) {
+          setPublishError(null);
+          setFormData(data);
+        }
+      };
 
-    fetchStudentDetails();
-  }, [id]); // Make sure to include 'id' in the dependency array
+      fetchStudent();
+    } catch (error) {
+      console.log(error.message);
+    }
+  }, [studentId]);
+  console.log(formData);
+
+  const handleUploadImage = async () => {
+    try {
+      if (!file) {
+        setImageUploadError("Please select an image");
+        return;
+      }
+      setImageUploadError(null);
+      const storage = getStorage(app);
+      const fileName = new Date().getTime() + "-" + file.name;
+      const storafeRef = ref(storage, fileName);
+      const uploadTask = uploadBytesResumable(storafeRef, file);
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setImageUploadProgress(progress.toFixed(0));
+        },
+        (error) => {
+          setImageUploadError("Image upload failed");
+          setImageUploadProgress(null);
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+            setImageUploadProgress(null);
+            setImageUploadError(null);
+            setFormData({ ...formData, profilePhoto: downloadURL });
+          });
+        }
+      );
+    } catch (error) {
+      setImageUploadError("Image upload failed");
+      setImageUploadProgress(null);
+      console.log(error);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`/api/student/${id}`, {
+      const response = await fetch(`/api/student/updatestudent/${studentId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -47,15 +95,16 @@ const EditStudent = () => {
         body: JSON.stringify(formData),
       });
       if (!response.ok) {
-        throw new Error(`Failed to Edit student. Status: ${response.status}`);
+        throw new Error(`Failed to create student. Status: ${response.status}`);
       }
       const data = await response.json();
-      setFormData(data);
+      console.log(data);
       navigate("/");
     } catch (error) {
-      console.log("error in student edit", error.message);
+      console.log("error in student create", error.message);
     }
   };
+  console.log(formData);
   return (
     <div className=" w-2/5 mt-10 border border-gray-100 mx-auto">
       <form className="flex p-2 flex-col gap-4" onSubmit={handleSubmit}>
@@ -64,19 +113,54 @@ const EditStudent = () => {
           <TextInput
             type="text"
             placeholder="student name"
-            value={formData.name || ""}
             id="name"
+            value={formData.name}
             onChange={handleChange}
             className="w-[80%]"
           />
         </div>
+        <div className="flex gap-4 items-center justify-between border-4 border-teal-500 border-dotted p-3">
+          <FileInput
+            type="file"
+            accept="image/*"
+            onChange={(e) => setFile(e.target.files[0])}
+          />
+
+          <Button
+            type="button"
+            gradientDuoTone="purpleToBlue"
+            size="sm"
+            outline
+            onClick={handleUploadImage}
+            disabled={imageUploadProgress}
+          >
+            {imageUploadProgress ? (
+              <div className="w-16 h-16">
+                <CircularProgressbar
+                  value={imageUploadProgress}
+                  text={`${imageUploadProgress || 0}%`}
+                />
+              </div>
+            ) : (
+              "Upload image"
+            )}
+          </Button>
+        </div>
+        {imageUploadError && <Alert color="failure">{imageUploadError}</Alert>}
+        {formData.image && (
+          <img
+            src={formData.profilePhoto}
+            alt="upload"
+            className="w-full h-10 object-cover"
+          />
+        )}
         <div className="flex gap-2 justify-between items-center">
           <Label value="Gender" />
           <TextInput
             type="text"
             placeholder="gender"
-            value={formData.gender || ""}
             id="gender"
+            value={formData.gender}
             onChange={handleChange}
             className="w-[80%]"
           />
@@ -86,8 +170,8 @@ const EditStudent = () => {
           <TextInput
             type="text"
             placeholder="Parent name"
-            value={formData.parentName || ""}
             id="parentName"
+            value={formData.parentName}
             onChange={handleChange}
             className="w-[80%]"
           />
@@ -98,8 +182,8 @@ const EditStudent = () => {
           <TextInput
             type="number"
             placeholder="acadmic year"
-            value={formData.acadmicYear || ""}
             id="acadmicYear"
+            value={formData.acadmicYear}
             onChange={handleChange}
             className="w-[80%]"
           />
@@ -109,8 +193,8 @@ const EditStudent = () => {
           <TextInput
             type="text"
             placeholder="school name"
-            value={formData.schoolName || ""}
             id="schoolName"
+            value={formData.schoolName}
             onChange={handleChange}
             className="w-[80%]"
           />

@@ -2,25 +2,21 @@ import Student from "../models/student.model.js";
 import { errorHandler } from "../utils/error.js";
 
 export const student = async (req, res, next) => {
+  if (
+    !req.body.name ||
+    !req.body.parentName ||
+    !req.body.gender ||
+    !req.body.acadmicYear ||
+    !req.body.schoolName
+  ) {
+    return next(errorHandler(500, "All fields are required"));
+  }
+  const newStudent = new Student({
+    ...req.body,
+  });
   try {
-    if (
-      !req.body.name ||
-      !req.body.parentName ||
-      !req.body.gender ||
-      !req.body.acadmicYear ||
-      !req.body.schoolName
-    ) {
-      next(errorHandler(500, "All fields are required"));
-    }
-    const newStudent = {
-      name: req.body.name,
-      parentName: req.body.parentName,
-      gender: req.body.gender,
-      acadmicYear: req.body.acadmicYear,
-      schoolName: req.body.schoolName,
-    };
-    const student = await Student.create(newStudent);
-    return res.status(200).json(student);
+    const savedStudent = await newStudent.save();
+    res.status(201).json(savedStudent);
   } catch (error) {
     next(error);
   }
@@ -39,9 +35,9 @@ export const getStudents = async (req, res, next) => {
 };
 
 export const getOneStudent = async (req, res, next) => {
-  const { id } = req.params;
+  const { studentId } = req.params;
   try {
-    const student = await Student.findById(id);
+    const student = await Student.findById(studentId);
     if (!student) {
       return next(errorHandler(400, "Student not found"));
     }
@@ -52,7 +48,7 @@ export const getOneStudent = async (req, res, next) => {
 };
 
 export const updateStudent = async (req, res, next) => {
-  const { id } = req.params;
+  const { studentId } = req.params;
   try {
     if (
       !req.body.name ||
@@ -65,7 +61,7 @@ export const updateStudent = async (req, res, next) => {
     }
 
     const updatedStudent = await Student.findByIdAndUpdate(
-      id,
+      studentId,
       {
         $set: {
           name: req.body.name,
@@ -73,6 +69,7 @@ export const updateStudent = async (req, res, next) => {
           gender: req.body.gender,
           acadmicYear: req.body.acadmicYear,
           schoolName: req.body.schoolName,
+          profilePhoto: req.body.profilePhoto,
         },
       },
       { new: true }
@@ -88,11 +85,8 @@ export const updateStudent = async (req, res, next) => {
 
 export const deleteStudent = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const result = await Student.findByIdAndDelete(id);
-    if (!result) {
-      return next(errorHandler(404, "Student not found"));
-    }
+    const { studentId } = req.params;
+    await Student.findByIdAndDelete(studentId);
     return res.status(200).json({ message: "Student deleted successfully" });
   } catch (error) {
     next(error);
